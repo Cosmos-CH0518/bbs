@@ -2,9 +2,9 @@ import requests
 from flask import Flask, render_template, request, redirect, flash
 
 # ここにSupabaseの情報を直接書く
-SUPABASE_URL = "https://xxxx.supabase.co"
-SUPABASE_API_KEY = "あなたのanonキー"
-SUPABASE_TABLE = "your_table_name"
+SUPABASE_URL = "https://uwbsrcjzlgjmvxhbfpye.supabase.co"
+SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3YnNyY2p6bGdqbXZ4aGJmcHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1MzI3ODcsImV4cCI6MjA2NzEwODc4N30.fW1qE12tTropZASR0atxVLOkVV3M9wRV0-JASZ4B6oo"
+SUPABASE_TABLE = "posts"
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
