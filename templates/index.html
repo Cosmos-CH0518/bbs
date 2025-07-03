@@ -6,11 +6,20 @@
   <style>
     body { font-family: sans-serif; margin: 20px; }
     .comment-box { border: 1px solid #aaa; padding: 10px; margin: 10px 0; }
+    .error { color: red; }
+    .success { color: green; }
   </style>
 </head>
 <body>
   <h1>掲示板</h1>
-  <form method="post">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="{{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <form method="post" autocomplete="off">
     <input name="username" placeholder="名前" required>
     <input name="message" placeholder="メッセージ" required>
     <button type="submit">投稿</button>
@@ -18,9 +27,12 @@
   <hr>
   {% for msg in messages %}
     <div class="comment-box">
-      <strong>{{ msg.username }}</strong> <small>{{ msg.created_at }}</small><br>
-      {{ msg.message }}
+      <strong>{{ msg.username|e }}</strong>
+      <small>{{ msg.created_at }}</small><br>
+      {{ msg.message|e }}
     </div>
+  {% else %}
+    <div>まだ投稿がありません。</div>
   {% endfor %}
 </body>
 </html>
