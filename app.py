@@ -1,15 +1,13 @@
-import os
 import requests
-from flask import Flask, render_template, request, redirect
-from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, flash
 
-load_dotenv()
-
-SUPABASE_URL = os.environ['SUPABASE_URL']
-SUPABASE_API_KEY = os.environ['SUPABASE_API_KEY']
-SUPABASE_TABLE = os.environ['SUPABASE_TABLE']
+# ここにSupabaseの情報を直接書く
+SUPABASE_URL = "https://xxxx.supabase.co"
+SUPABASE_API_KEY = "あなたのanonキー"
+SUPABASE_TABLE = "your_table_name"
 
 app = Flask(__name__)
+app.secret_key = "your-secret-key"
 
 def fetch_messages():
     url = f"{SUPABASE_URL}/rest/v1/{SUPABASE_TABLE}?order=created_at.desc"
@@ -17,8 +15,15 @@ def fetch_messages():
         "apikey": SUPABASE_API_KEY,
         "Authorization": f"Bearer {SUPABASE_API_KEY}"
     }
-    res = requests.get(url, headers=headers)
-    return res.json() if res.status_code == 200 else []
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code != 200:
+            print(f"Supabase取得失敗: {res.status_code} {res.text}")
+            return []
+        return res.json()
+    except Exception as e:
+        print(f"Supabase取得例外: {e}")
+        return []
 
 def post_message(username, message):
     url = f"{SUPABASE_URL}/rest/v1/{SUPABASE_TABLE}"
@@ -31,16 +36,29 @@ def post_message(username, message):
         "username": username,
         "message": message
     }
-    res = requests.post(url, headers=headers, json=data)
-    return res.status_code == 201
+    try:
+        res = requests.post(url, headers=headers, json=data, timeout=5)
+        if res.status_code not in (201, 200):
+            print(f"Supabase投稿失敗: {res.status_code} {res.text}")
+            return False
+        return True
+    except Exception as e:
+        print(f"Supabase投稿例外: {e}")
+        return False
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        username = request.form['username']
-        message = request.form['message']
-        if username and message:
-            post_message(username, message)
+        username = request.form.get('username', '').strip()
+        message = request.form.get('message', '').strip()
+        if not username or not message:
+            flash('名前とメッセージは必須です', 'error')
+        else:
+            ok = post_message(username, message)
+            if not ok:
+                flash('投稿に失敗しました。', 'error')
+            else:
+                flash('投稿しました', 'success')
         return redirect('/')
     messages = fetch_messages()
     return render_template('index.html', messages=messages)
